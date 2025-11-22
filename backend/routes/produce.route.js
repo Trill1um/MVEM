@@ -2,8 +2,6 @@ import express from 'express';
 import { farmerRoute, buyerRoute, protectRoute, adminRoute } from '../middleware/auth.middleware.js';
 import {
   getAllProduce, 
-  getProduce, 
-
   getProduce,
   createProduce,
   updateProduce,

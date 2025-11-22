@@ -12,3 +12,5 @@ const router = express.Router();
 router.get('/wishlist/my', protectRoute, buyerRoute, getMyWishlist);
 router.post('/wishlist/add', protectRoute, buyerRoute, addToWishlist);
 router.delete('/wishlist/remove', protectRoute, buyerRoute, removeFromWishlist);
+
+export default router;

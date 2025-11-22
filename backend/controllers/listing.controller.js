@@ -1,7 +1,7 @@
-import Listing from '../models/listing.model.js';
-import Produce from '../models/produce.model.js';
-import Wishlist from '../models/wishlist.model.js';
-import cloudinary from '../utils/cloudinary.js';
+import Listing from '../models/Listing.js';
+import Produce from '../models/Produce.js';
+import Wishlist from '../models/Wishlist.js';
+import cloudinary from '../lib/cloudinary.js';
 
 
 // ========== LISTING MANAGEMENT ==========
