@@ -17,6 +17,7 @@ export const sendVerificationEmail = async (userEmail, sender = process.env.EMAI
   const key = `verify_cooldown:${userEmail}`;
   
   try {
+    console.log("Preparing to send verification email to:", userEmail);
     sgMail.setApiKey(api_key);
     // console.log("Sending verification email to:", userEmail, "from:", sender);
     

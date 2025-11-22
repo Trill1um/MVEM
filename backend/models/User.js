@@ -3,23 +3,39 @@ import bcrypt from "bcryptjs";
 
 const userSchema = new mongoose.Schema(
   {
-    colonyName: {
+    name: {
       type: String,
+      required: [true, "Name is required"],
       trim: true,
       maxlength: 50,
       minlength: 2,
+    },
+    address: {
+      type: String,
+      trim: true,
+      maxlength: 255,
+      minlength: 10,
       required: function() {
-        return this.role === 'seller';
+        return this.role === 'farmer';
       }
     },
     email: {
       type: String,
-      required: [true, "Email is required"],
       unique: true,
+      sparse: true, // Allows multiple null values while maintaining uniqueness for non-null values
       trim: true,
       maxlength: 100,
       minlength: 5,
       match: /.+\@.+\..+/,
+    },
+    phoneNumber: {
+      type: String,
+      unique: true,
+      sparse: true,
+      trim: true,
+      maxlength: 20,
+      minlength: 10,
+      match: /^[\+]?[1-9][\d]{0,15}$/,
     },
     password: {
       type: String,
@@ -28,16 +44,9 @@ const userSchema = new mongoose.Schema(
       maxlength: 1024,
       minlength: [6, "Password must be at least 6 characters long"],
     },
-    facebookLink: {
-      type: String,
-      trim: true,
-      required: function() {
-        return this.role === 'seller';
-      }
-    },
     role: {
       type: String,
-      enum: ["seller", "buyer"],
+      enum: ["farmer", "buyer", "admin"],
       default: "buyer",
     },
     code: {
@@ -49,6 +58,16 @@ const userSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+// At least one contact method is needed
+userSchema.pre('validate', function(next) {
+  if (!this.email && !this.phoneNumber) {
+    const error = new Error('Either email or phone number is required');
+    error.name = 'ValidationError';
+    return next(error);
+  }
+  next();
+});
 
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password") || this.password.startsWith("$2b$")) {
@@ -68,7 +87,7 @@ userSchema.methods.comparePassword = async function (password) {
   return hashed;
 };
 
-const User = mongoose.model("User", userSchema);
+const User = mongoose.model("user", userSchema);
 const tempUser=mongoose.model("tempUser", userSchema);
 
 tempUser.collection.createIndex( { "createdAt": 1 }, { expireAfterSeconds: 60 * 20 } ); // 20 minutes
