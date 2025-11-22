@@ -34,7 +34,7 @@ export const protectRoute = async (req, res, next) => {
 
 export const farmerRoute = async (req, res, next) => {
   try {
-    // console.log("Farmer route accessed by user:", req.user?.name);
+    // console.log("Farmer route accessed by user:", req.user);
     if (req.user.role !== "farmer") {
       return res.status(403).json({ message: "Forbidden - Farmers Only" });
     }

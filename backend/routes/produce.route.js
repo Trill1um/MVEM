@@ -5,19 +5,18 @@ import {
   getProduce,
   createProduce,
   updateProduce,
-  deleteProduce,
+  deleteProduce
 } from '../controllers/produce.controller.js';
 
 const router = express.Router();
 
-//Public Access - Browse produce and listings
+// ========== ADMIN ROUTES (Produce Management) ==========
+router.post('/admin/create', protectRoute, adminRoute, createProduce);
+router.put('/admin/:id', protectRoute, adminRoute, updateProduce); 
+router.delete('/admin/:id', protectRoute, adminRoute, deleteProduce);
+
+// ========== PUBLIC PRODUCE ROUTES ==========
 router.get('/', getAllProduce); // Get all produce types
-router.get('/:id', getProduce); // Get specific produce
+router.get('/:id', getProduce); // Get specific produce (must be last!)
 
-//Admin Access
-router.get('/admin/produce/:id', protectRoute, adminRoute, getProduce); 
-router.post('/admin/produce/create', protectRoute, adminRoute, createProduce);
-router.put('/admin/produce/update/:id', protectRoute, adminRoute, updateProduce); 
-router.delete('/admin/produce/delete/:id', protectRoute, adminRoute, deleteProduce);
-
-export default router;
+export default router; 

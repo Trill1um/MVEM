@@ -58,7 +58,7 @@ export const login = async (req, res) => {
   try {
     // console.log("Login route activated: ", req.body);
     const { contact, password } = req.body; // contact can be email or phone
-
+    console.log(req.body)
     // Validate input
     if (!contact || !password) {
       return res
@@ -99,7 +99,7 @@ export const login = async (req, res) => {
     await storeRefreshToken(user._id, refreshToken);
 
     // Clean up temp and cooldown tokens
-    await client.del(`verify_cooldown:${email}`);
+    await client.del(`verify_cooldown:${contact}`);
 
     // console.log("User authenticated successfully:", user);
     return res.status(200).json({

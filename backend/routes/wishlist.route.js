@@ -9,8 +9,8 @@ import {
 const router = express.Router();
 
 //Buyer Access - Wishlist management
-router.get('/wishlist/my', protectRoute, buyerRoute, getMyWishlist);
-router.post('/wishlist/add', protectRoute, buyerRoute, addToWishlist);
-router.delete('/wishlist/remove', protectRoute, buyerRoute, removeFromWishlist);
+router.get('/my', protectRoute, buyerRoute, getMyWishlist);
+router.post('/add', protectRoute, buyerRoute, addToWishlist);
+router.delete('/remove', protectRoute, buyerRoute, removeFromWishlist);
 
 export default router;

@@ -1,6 +1,8 @@
 import Produce from "../models/Produce.js";
+import Wishlist from "../models/Wishlist.js";
 import cloudinary from "../lib/cloudinary.js";
 import Listing from "../models/Listing.js";
+import mongoose from "mongoose";
 
 export const getAllProduce = async (req, res) => {
   try {
@@ -92,7 +94,7 @@ export const createProduce = async (req, res) => {
         console.error("Error uploading images to Cloudinary:", error);
         return res.status(500).json({ message: "Image upload failed" });
       }
-    }
+    } 
 
     const produce = await Produce.create({
       name: name.toLowerCase().trim(),
@@ -102,6 +104,7 @@ export const createProduce = async (req, res) => {
       images: cloudinaryResponses
         ?.filter((response) => response.secure_url)
         .map((response) => response.secure_url) || [],
+      images: [],
     });
 
     res.status(201).json({ produce, message: "Produce created successfully" });
@@ -219,6 +222,7 @@ export const updateProduce = async (req, res) => {
 
 export const deleteProduce = async (req, res) => {
   try {
+
     const produce = await Produce.findById(req.params.id);
     if (!produce) {
       return res.status(404).json({ message: "Produce not found" });

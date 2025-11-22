@@ -2,7 +2,7 @@ import Listing from '../models/Listing.js';
 import Produce from '../models/Produce.js';
 import Wishlist from '../models/Wishlist.js';
 import cloudinary from '../lib/cloudinary.js';
-
+import mongoose from 'mongoose';
 
 // ========== LISTING MANAGEMENT ==========
 
@@ -79,12 +79,18 @@ export const getListingsByProduce = async (req, res) => {
 // Get all listings for a specific farmer
 export const getListingsByFarmer = async (req, res) => {
   try {
-    const { id: farmerId } = req.params;
+    // Get farmer ID from query parameter
+    const farmerId = req.query.id;
+    console.log("Fetching listings for farmer ID:", farmerId);
+    
+    if (!farmerId) {
+      return res.status(400).json({ message: "Farmer ID is required as query parameter" });
+    }
     
     let listings = await Listing.find({ farmerId })
       .populate('produceId', 'name description category unit images')
       .populate('farmerId', 'name address email phoneNumber')
-      .sort(sortOptions);
+      ;
     
     // Group listings by produce type for better organization
     const groupedByProduce = listings.reduce((acc, listing) => {
@@ -132,9 +138,9 @@ export const getListingsByFarmer = async (req, res) => {
 export const createListing = async (req, res) => {
   try {
     const {
-      produceId,
       produceName,
       produceCategory,
+
       produceDescription,
       produceUnit,
       price,
@@ -144,7 +150,7 @@ export const createListing = async (req, res) => {
     } = req.body;
 
     // Validate input
-    if ((!produceId && (!produceName || !produceCategory || !produceUnit)) || !price || stock === undefined || !harvestDate) {
+    if (((!produceName || !produceCategory || !produceUnit)) || !price || stock === undefined || !harvestDate) {
       return res.status(400).json({ message: "All fields are required. Provide either produceId or produce details (name, category, unit)" });
     }
 
@@ -156,11 +162,23 @@ export const createListing = async (req, res) => {
       return res.status(400).json({ message: "Stock must be a non-negative integer" });
     }
 
-    if (new Date(harvestDate) > new Date()) {
+    // Validate and parse harvest date
+    const parsedHarvestDate = new Date(harvestDate);
+    if (isNaN(parsedHarvestDate.getTime())) {
+      return res.status(400).json({ 
+        message: "Invalid harvest date format. Please use ISO date format (YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS)" 
+      });
+    }
+
+    if (parsedHarvestDate > new Date()) {
       return res.status(400).json({ message: "Harvest date cannot be in the future" });
     }
 
-    let produce = await Produce.findById(produceId);
+    // Get generic Produce
+    let produce = await Produce.findOne({
+      name: produceName.toLowerCase().trim(),
+      category: produceCategory.toLowerCase().trim()
+    });
     
     if (!produce) {
         // Create new produce type
@@ -171,11 +189,23 @@ export const createListing = async (req, res) => {
           unit: produceUnit,
           images: [] // Generic produce images can be added later
         });
+        console.log("Created new produce:", produce);
+    }
+    console.log("Used Existing Produce")
+
+    // Check if current Farmer already has a listing for this produce type
+    const existingListing = await Listing.findOne({
+      farmerId: req.user.id,
+      produceId: produce._id
+    });
+
+    if (existingListing) {
+      return res.status(409).json({ message: "You already have a listing for this produce type" });
     }
 
+    // Handle image upload
     let cloudinaryResponses = [];
 
-    // Handle image upload
     if (images.length > 0) {
       try {
         const uploadPromises = images.map((image) =>
@@ -194,12 +224,12 @@ export const createListing = async (req, res) => {
       produceId: produce._id,
       price: parseFloat(price),
       stock: parseInt(stock),
-      harvestDate: new Date(harvestDate),
+      harvestDate: parsedHarvestDate,
       images: cloudinaryResponses
         ?.filter((response) => response.secure_url)
         .map((response) => response.secure_url) || [],
     });
-
+    
     // Notify interested buyers
     try {
       const interestedBuyers = await Wishlist.findInterestedBuyers(
@@ -207,7 +237,7 @@ export const createListing = async (req, res) => {
         produce.category,
         listing._id,
       );
-
+      
       // TODO: Implement notification sending logic
       // await sendNotifications(interestedBuyers, listing, produce);
       
@@ -248,8 +278,19 @@ export const updateListing = async (req, res) => {
     if (stock !== undefined && (isNaN(parseInt(stock)) || parseInt(stock) < 0)) {
       return res.status(400).json({ message: "Stock must be a non-negative integer" });
     }
-    if (harvestDate && new Date(harvestDate) > new Date()) {
-      return res.status(400).json({ message: "Harvest date cannot be in the future" });
+    
+    // Validate harvest date if provided
+    let parsedHarvestDate;
+    if (harvestDate) {
+      parsedHarvestDate = new Date(harvestDate);
+      if (isNaN(parsedHarvestDate.getTime())) {
+        return res.status(400).json({ 
+          message: "Invalid harvest date format. Please use ISO date format (YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS)" 
+        });
+      }
+      if (parsedHarvestDate > new Date()) {
+        return res.status(400).json({ message: "Harvest date cannot be in the future" });
+      }
     }
 
     if (status && !['available', 'out of stock', 'expired'].includes(status)) {
@@ -309,7 +350,7 @@ export const updateListing = async (req, res) => {
     // Update listing
     if (price !== undefined) listing.price = parseFloat(price);
     if (stock !== undefined) listing.stock = parseInt(stock);
-    if (harvestDate) listing.harvestDate = new Date(harvestDate);
+    if (harvestDate) listing.harvestDate = parsedHarvestDate;
     if (status) listing.status = status;
     listing.images = updatedImages;
 
