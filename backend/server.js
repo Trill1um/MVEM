@@ -5,7 +5,13 @@ import cookieParser from "cookie-parser";
 import http from "http";
 import { Server } from "socket.io";
 
-import readingRoute from "./routes/reading.route.js";
+import { 
+  handleSensorData, 
+  handleESP32Connection, 
+  handleFrontendConnection, 
+  handleDisconnection, 
+  getConnectionStats 
+} from "./controllers/websocket.controller.js";
 
 dotenv.config();
 
@@ -56,39 +62,56 @@ app.use((req, res, next) => {
   next(); // This was missing!
 });
 
+
 // Handle WebSocket connections
 io.on('connection', (socket) => {
   console.log(`🔌 Client connected: ${socket.id}`);
   
-  // Handle ESP32 connections
+  // Handle ESP32 device connections
   socket.on('esp32_connected', (data) => {
-    console.log(`🤖 ESP32 device connected: ${data.device_id}`);
-    socket.join('esp32_devices');
+    handleESP32Connection(socket, data);
   });
   
   // Handle sensor data from ESP32
   socket.on('sensor_data', (data) => {
-    console.log(`📊 Sensor data received from ${data.device_id}:`, data.data);
-    io.emit('newData', {
-      device_id: data.device_id,
-      ...data.data,
-      timestamp: new Date().toISOString()
-    });
+    handleSensorData(io, socket, data);
   });
   
+  // Handle frontend client connections
+  socket.on('frontend_connected', (data) => {
+    handleFrontendConnection(socket, data);
+  });
+  
+  // Handle disconnections
   socket.on('disconnect', () => {
-    console.log(`❌ Client disconnected: ${socket.id}`);
+    handleDisconnection(socket);
   });
   
+  // Handle socket errors
   socket.on('error', (error) => {
     console.error(`🚫 Socket error for ${socket.id}:`, error);
   });
 });
 
-// Make io accessible in routes/controllers
+// Make io accessible for any future middleware (if needed)
 app.set("io", io);
 
-app.use("/api/", readingRoute);
+// Health check endpoint
+app.get('/health', (req, res) => {
+  const stats = getConnectionStats(io);
+  res.json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    server: 'WebSocket-only sensor data server',
+    ...stats
+  });
+});
+
+// WebSocket connection stats endpoint
+app.get('/connections', (req, res) => {
+  const stats = getConnectionStats(io);
+  res.json(stats);
+});
 
 server.listen(PORT, () => {
   console.log("Server is running on port ", PORT);

@@ -1,22 +1,22 @@
 import { create } from 'zustand';
-import { io } from "socket.io-client";
+import { io } from 'socket.io-client';
 
 // Transform raw data into display-ready format
 const transformData = (rawData) => {
   if (!rawData) return null;
 
-  // Handle different data formats
+  // Handle different data formats from WebSocket
   const data = rawData.data || rawData;
 
   return {
-    temperature: data.temperature ? parseFloat(data.temperature).toFixed(1) : null,
-    humidity: data.humidity ? parseFloat(data.humidity).toFixed(1) : null,
-    pressure: data.pressure ? parseFloat(data.pressure).toFixed(2) : null,
-    airQuality: data.air_quality_ppm ? parseFloat(data.air_quality_ppm).toFixed(1) : null,
-    rzero: data.rzero ? parseFloat(data.rzero).toFixed(1) : null,
-    timestamp: rawData.timestamp || new Date().toISOString(),
-    deviceId: rawData.device_id || rawData.deviceId || 'Unknown',
-    raw: rawData // Keep original data for debugging
+    temperature: parseFloat(data.temperature || 0),
+    humidity: parseFloat(data.humidity || 0),
+    air_quality_ppm: parseFloat(data.air_quality_ppm || 0),
+    rzero: parseFloat(data.rzero || 0),
+    device_id: rawData.device_id || 'Unknown',
+    esp32_timestamp: data.esp32_timestamp || Date.now(),
+    server_timestamp: rawData.server_timestamp || new Date().toISOString(),
+    received_at: rawData.received_at || Date.now()
   };
 };
 
@@ -25,94 +25,101 @@ const formatForDisplay = (data) => {
   if (!data) return null;
 
   return {
-    displayText: `Temperature: ${data.temperature}°C, Humidity: ${data.humidity}%, Pressure: ${data.pressure} hPa`,
+    displayText: `Temperature: ${data.temperature.toFixed(1)}°C, Humidity: ${data.humidity.toFixed(1)}%, Air Quality: ${data.air_quality_ppm.toFixed(1)} ppm`,
     values: {
-      temperature: { value: data.temperature, unit: '°C', label: 'Temperature' },
-      humidity: { value: data.humidity, unit: '%', label: 'Humidity' },
-      pressure: { value: data.pressure, unit: 'hPa', label: 'Pressure' },
-      airQuality: { value: data.airQuality, unit: 'ppm', label: 'Air Quality' },
-      rzero: { value: data.rzero, unit: '', label: 'RZero' }
+      temperature: { value: data.temperature.toFixed(1), unit: '°C', label: 'Temperature' },
+      humidity: { value: data.humidity.toFixed(1), unit: '%', label: 'Humidity' },
+      airQuality: { value: data.air_quality_ppm.toFixed(1), unit: 'ppm', label: 'Air Quality' },
+      rzero: { value: data.rzero.toFixed(1), unit: '', label: 'RZero' }
     },
     metadata: {
-      timestamp: new Date(data.timestamp).toLocaleString(),
-      device: data.deviceId,
-      lastUpdate: data.timestamp
+      timestamp: new Date(data.server_timestamp).toLocaleString(),
+      device: data.device_id,
+      lastUpdate: data.server_timestamp,
+      latency: data.received_at - data.esp32_timestamp
     }
   };
 };
 
 // Zustand store for socket data
 export const useSocketStore = create((set, get) => ({
-  // State
   socket: null,
   isConnected: false,
-  connectionStatus: 'disconnected', // 'connecting', 'connected', 'disconnected', 'error'
+  connectionStatus: 'disconnected',
   currentData: null,
   formattedData: null,
   error: null,
   socketId: null,
+  dataRate: 0,
+  lastReceived: null,
 
-  // Actions
   connect: () => {
-    const state = get();
+    const socketUrl = import.meta.env.VITE_BACKEND_PRODUCTION_URL || 'https://mvem.onrender.com';
     
-    // Disconnect existing socket
-    if (state.socket) {
-      state.socket.disconnect();
-    }
+    console.log('🔌 Connecting to socket:', socketUrl);
+    set({ connectionStatus: 'connecting', error: null });
 
-    // Get URL from environment variable
-    const socketUrl = import.meta.env.VITE_BACKEND_PRODUCTION_URL || "https://mvem.onrender.com";
-    
-    console.log("🔌 Connecting to socket:", socketUrl);
-    
-    set({ 
-      connectionStatus: 'connecting',
-      error: null 
+    const socket = io(socketUrl, {
+      transports: ['websocket', 'polling'],
+      timeout: 20000,
+      forceNew: true
     });
 
-    const socket = io(socketUrl);
-
-    // Socket event handlers
-    socket.on("connect", () => {
-      console.log("✅ Socket connected:", socket.id);
-      set({
-        socket,
-        isConnected: true,
-        connectionStatus: 'connected',
+    socket.on('connect', () => {
+      console.log('✅ Socket connected:', socket.id);
+      set({ 
+        isConnected: true, 
+        connectionStatus: 'connected', 
         socketId: socket.id,
         error: null
       });
+
+      // Identify as frontend client
+      socket.emit('frontend_connected', {
+        client_id: socket.id,
+        client_type: 'web_dashboard',
+        timestamp: new Date().toISOString()
+      });
     });
 
-    socket.on("newData", (rawData) => {
-      console.log("📡 Received live data:", rawData);
-      const transformedData = transformData(rawData);
-      const formattedData = formatForDisplay(transformedData);
+    socket.on('newData', (rawData) => {
+      const now = Date.now();
+      const { lastReceived } = get();
       
-      set({
-        currentData: transformedData,
-        formattedData: formattedData,
-        error: null
+      console.log('📡 Received live data:', rawData);
+      
+      const transformedData = transformData(rawData);
+      const formatted = formatForDisplay(transformedData);
+      
+      // Calculate data rate
+      let dataRate = 0;
+      if (lastReceived) {
+        dataRate = 1000 / (now - lastReceived); // Messages per second
+      }
+      
+      set({ 
+        currentData: transformedData, 
+        formattedData: formatted,
+        lastReceived: now,
+        dataRate: dataRate
       });
     });
 
-    socket.on("disconnect", () => {
-      console.log("❌ Socket disconnected");
-      set({
-        isConnected: false,
-        connectionStatus: 'disconnected',
-        socketId: null
+    socket.on('disconnect', () => {
+      console.log('❌ Socket disconnected');
+      set({ 
+        isConnected: false, 
+        connectionStatus: 'disconnected', 
+        socketId: null 
       });
     });
 
-    socket.on("connect_error", (error) => {
-      console.error("🚫 Socket connection error:", error);
-      set({
-        isConnected: false,
-        connectionStatus: 'error',
-        error: error.message,
-        socketId: null
+    socket.on('connect_error', (error) => {
+      console.error('🚫 Socket connection error:', error);
+      set({ 
+        isConnected: false, 
+        connectionStatus: 'error', 
+        error: error.message 
       });
     });
 
@@ -120,31 +127,26 @@ export const useSocketStore = create((set, get) => ({
   },
 
   disconnect: () => {
-    const state = get();
-    if (state.socket) {
-      state.socket.disconnect();
-      set({
-        socket: null,
-        isConnected: false,
+    const { socket } = get();
+    if (socket) {
+      socket.disconnect();
+      set({ 
+        socket: null, 
+        isConnected: false, 
         connectionStatus: 'disconnected',
-        currentData: null,
-        formattedData: null,
-        socketId: null
+        socketId: null 
       });
     }
   },
 
-  // Reset error
   clearError: () => set({ error: null }),
-
-  // Get connection info
+  
   getConnectionInfo: () => {
-    const state = get();
-    return {
-      isConnected: state.isConnected,
-      status: state.connectionStatus,
-      socketId: state.socketId,
-      hasData: !!state.currentData
+    const { isConnected, socketId, dataRate } = get();
+    return { 
+      connected: isConnected, 
+      socketId, 
+      dataRate: dataRate.toFixed(2)
     };
   }
 }));
