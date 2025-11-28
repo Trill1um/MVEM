@@ -11,11 +11,9 @@ const transformData = (rawData) => {
   return {
     temperature: data.temperature ? parseFloat(data.temperature).toFixed(1) : null,
     humidity: data.humidity ? parseFloat(data.humidity).toFixed(1) : null,
-    pressure: data.pressure ? parseFloat(data.pressure).toFixed(2) : null,
     airQuality: data.air_quality_ppm ? parseFloat(data.air_quality_ppm).toFixed(1) : null,
     rzero: data.rzero ? parseFloat(data.rzero).toFixed(1) : null,
     timestamp: rawData.timestamp || new Date().toISOString(),
-    deviceId: rawData.device_id || rawData.deviceId || 'Unknown',
     raw: rawData // Keep original data for debugging
   };
 };
@@ -25,17 +23,15 @@ const formatForDisplay = (data) => {
   if (!data) return null;
 
   return {
-    displayText: `Temperature: ${data.temperature}°C, Humidity: ${data.humidity}%, Pressure: ${data.pressure} hPa`,
+    displayText: `Temperature: ${data.temperature}°C, Humidity: ${data.humidity}%`,
     values: {
       temperature: { value: data.temperature, unit: '°C', label: 'Temperature' },
       humidity: { value: data.humidity, unit: '%', label: 'Humidity' },
-      pressure: { value: data.pressure, unit: 'hPa', label: 'Pressure' },
       airQuality: { value: data.airQuality, unit: 'ppm', label: 'Air Quality' },
       rzero: { value: data.rzero, unit: '', label: 'RZero' }
     },
     metadata: {
       timestamp: new Date(data.timestamp).toLocaleString(),
-      device: data.deviceId,
       lastUpdate: data.timestamp
     }
   };
@@ -46,7 +42,6 @@ export const useSocketStore = create((set, get) => ({
   // State
   socket: null,
   isConnected: false,
-  connectionStatus: 'disconnected', // 'connecting', 'connected', 'disconnected', 'error'
   currentData: null,
   formattedData: null,
   error: null,

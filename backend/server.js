@@ -62,15 +62,12 @@ io.on('connection', (socket) => {
   
   // Handle ESP32 connections
   socket.on('esp32_connected', (data) => {
-    console.log(`🤖 ESP32 device connected: ${data.device_id}`);
     socket.join('esp32_devices');
   });
   
   // Handle sensor data from ESP32
   socket.on('sensor_data', (data) => {
-    console.log(`📊 Sensor data received from ${data.device_id}:`, data.data);
     io.emit('newData', {
-      device_id: data.device_id,
       ...data.data,
       timestamp: new Date().toISOString()
     });
