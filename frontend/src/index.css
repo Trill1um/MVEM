@@ -1,0 +1,136 @@
+@import "tailwindcss";
+
+@import "tailwindcss";
+
+
+.btn-primary {
+  background: var(--gradient-primary);
+  color: var(--white);
+  border: none;
+  cursor: pointer;
+}
+
+.btn-unactive {
+  background: var(--white);
+  border: none;
+  box-shadow: 0 0 0 2px var(--orange) inset;
+}
+
+.btn-anim {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  outline: none;
+  user-select: none;
+}
+
+.btn-anim:hover {
+  transform: scale(1.05);
+  cursor: pointer;
+  outline: none;
+}
+
+.btn-anim:active {
+  transform: scale(0.95);
+  cursor: pointer;
+  outline: none;
+}
+
+.btn-anim-transform {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  outline: none;
+  background: var(--white);
+  color: var(--black);
+  border: 2px solid var(--black);
+}
+
+.btn-anim-transform:hover {
+  transform: scale(1.05);
+  cursor: pointer;
+  outline: none;
+  background: var(--gradient-hover);
+  color: var(--white);
+  border: 2px transparent solid;
+}
+
+.btn-add {
+  color: var(--gray);
+  border: 2px dashed var(--gray);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  gap: 10px;
+  border-radius: 15px;
+  transition: all 0.2s ease;
+}
+
+.btn-add:hover {
+  cursor: pointer;
+  background-color: var(--gray-light);
+  transform: scale(1.05);
+}
+
+
+
+/* ========================================== */
+/* PRODUCT CARD TYPOGRAPHY */
+/* ========================================== */
+
+.item-name {
+  font-family: var(--font-fredoka);
+  font-style: normal;
+  font-size: var(--text-2xl); /* 25px */
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.375px;
+  color: var(--red);
+}
+
+.item-seller {
+  font-family: var(--font-quicksand);
+  font-style: normal;
+  font-size: var(--text-sm); /* 14px */
+  font-weight: 500;
+  line-height: 1.6;
+  letter-spacing: 0.07px;
+  color: var(--orange);
+}
+
+.item-price {
+  font-family: var(--font-fredoka);
+  font-style: normal;
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.42px;
+  color: var(--maroon);
+}
+
+.item-category {
+  font-family: var(--font-quicksand);
+  font-style: normal;
+  font-size: var(--text-xs); /* 12px */
+  font-weight: 700;
+  line-height: 1.6;
+  letter-spacing: 0.12px;
+  color: var(--maroon);
+}
+
+.item-banner {
+  font-family: var(--font-quicksand);
+  font-style: normal;
+  font-size: var(--text-base); /* 16px */
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: 0.08px;
+  color: var(--white);
+}
+
+.item-button {
+  font-family: var(--font-quicksand);
+  font-style: normal;
+  font-size: var(--text-base); /* 16px */
+  font-weight: 600;
+  line-height: 1.3;
+}
