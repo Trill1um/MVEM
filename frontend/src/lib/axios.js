@@ -1,9 +1,9 @@
 import axios from "axios";
 
-// For testing: Connect directly to Railway backend
-const baseURL =
-  (import.meta.env.BACKEND_PRODUCTION_URL ||
-    import.meta.env.BACKEND_DEVELOPMENT_URL) + "/api";
+// For testing: Connect directly to backend
+const baseURL = 
+  import.meta.env.VITE_BACKEND_PRODUCTION_URL + "/api" ||
+  "https://mvem.onrender.com/api";
 
 const axiosInstance = axios.create({
   baseURL,
