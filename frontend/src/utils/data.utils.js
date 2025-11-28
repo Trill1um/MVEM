@@ -1,11 +1,10 @@
 import { create } from 'zustand';
 import { io } from "socket.io-client";
 
-// Transform raw data into display-ready format
 const transformData = (rawData) => {
   if (!rawData) return null;
 
-  // Handle different data formats
+  // Just in case
   const data = rawData.data || rawData;
 
   return {
@@ -14,11 +13,10 @@ const transformData = (rawData) => {
     airQuality: data.air_quality_ppm ? parseFloat(data.air_quality_ppm).toFixed(1) : null,
     rzero: data.rzero ? parseFloat(data.rzero).toFixed(1) : null,
     timestamp: rawData.timestamp || new Date().toISOString(),
-    raw: rawData // Keep original data for debugging
+    raw: rawData
   };
 };
 
-// Format data for display
 const formatForDisplay = (data) => {
   if (!data) return null;
 
@@ -37,9 +35,8 @@ const formatForDisplay = (data) => {
   };
 };
 
-// Zustand store for socket data
 export const useSocketStore = create((set, get) => ({
-  // State
+  // States
   socket: null,
   isConnected: false,
   currentData: null,
@@ -56,10 +53,9 @@ export const useSocketStore = create((set, get) => ({
       state.socket.disconnect();
     }
 
-    // Get URL from environment variable
     const socketUrl = import.meta.env.VITE_BACKEND_PRODUCTION_URL || "https://mvem.onrender.com";
     
-    console.log("🔌 Connecting to socket:", socketUrl);
+    console.log("Connecting to socket:", socketUrl);
     
     set({ 
       connectionStatus: 'connecting',
@@ -70,7 +66,7 @@ export const useSocketStore = create((set, get) => ({
 
     // Socket event handlers
     socket.on("connect", () => {
-      console.log("✅ Socket connected:", socket.id);
+      console.log("Socket connected:", socket.id);
       set({
         socket,
         isConnected: true,
@@ -81,7 +77,7 @@ export const useSocketStore = create((set, get) => ({
     });
 
     socket.on("newData", (rawData) => {
-      console.log("📡 Received live data:", rawData);
+      console.log("Received live data:", rawData);
       const transformedData = transformData(rawData);
       const formattedData = formatForDisplay(transformedData);
       
@@ -93,7 +89,7 @@ export const useSocketStore = create((set, get) => ({
     });
 
     socket.on("disconnect", () => {
-      console.log("❌ Socket disconnected");
+      console.log("Socket disconnected");
       set({
         isConnected: false,
         connectionStatus: 'disconnected',
@@ -102,7 +98,7 @@ export const useSocketStore = create((set, get) => ({
     });
 
     socket.on("connect_error", (error) => {
-      console.error("🚫 Socket connection error:", error);
+      console.error("Socket connection error:", error);
       set({
         isConnected: false,
         connectionStatus: 'error',

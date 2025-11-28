@@ -5,3 +5,5 @@
 /env_copies
 
 **/node_modules
+
+**/docs

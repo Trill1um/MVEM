@@ -26,19 +26,19 @@ app.use(cors({
     // Allow requests with no origin
 
     if (!origin) {
-      console.log("⚠️ No origin in request, allowing by default");
+      console.log("No origin in request, allowing by default");
       return callback(null, true);
     }
     const allowedOrigins = [
       process.env.BACKEND_DEVELOPMENT_URL,
       process.env.BACKEND_PRODUCTION_URL,
     ].filter(Boolean);
-    console.log(`🔍 Checking origin: ${origin} against allowed: ${allowedOrigins.join(', ')}`);
+    console.log(`Checking origin: ${origin} against allowed: ${allowedOrigins.join(', ')}`);
     if (allowedOrigins.includes(origin)) {
-      console.log(`✅ CORS allowed origin: ${origin}`);
+      console.log(`CORS allowed origin: ${origin}`);
       callback(null, true);
     } else {
-      console.log(`🚫 CORS blocked origin: ${origin}`);
+      console.log(`CORS blocked origin: ${origin}`);
       callback(new Error('Not allowed by CORS'));
     }
   },
@@ -51,14 +51,9 @@ app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-app.use((req, res, next) => {
-  console.log(`🚀 ${req.method} ${req.url} - Origin: ${req.headers.origin}`);
-  next(); // This was missing!
-});
-
 // Handle WebSocket connections
 io.on('connection', (socket) => {
-  console.log(`🔌 Client connected: ${socket.id}`);
+  console.log(`Client connected: ${socket.id}`);
   
   // Handle ESP32 connections
   socket.on('esp32_connected', (data) => {
@@ -74,11 +69,11 @@ io.on('connection', (socket) => {
   });
   
   socket.on('disconnect', () => {
-    console.log(`❌ Client disconnected: ${socket.id}`);
+    console.log(`Client disconnected: ${socket.id}`);
   });
   
   socket.on('error', (error) => {
-    console.error(`🚫 Socket error for ${socket.id}:`, error);
+    console.error(`Socket error for ${socket.id}:`, error);
   });
 });
 
