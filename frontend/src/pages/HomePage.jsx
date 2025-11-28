@@ -102,9 +102,9 @@ const HomePage = () => {
 	};
 
 	return (
-		<div className="w-full min-h-screen flex flex-col items-center justify-center bg-white font-fredoka">
+		<div className="w-full min-h-screen flex flex-col items-center justify-center bg-gray-50 font-sans text-gray-900">
 			{/* Connection Status */}
-			<div className="mb-4 px-4 py-2 rounded shadow bg-gray-50">
+			<div className="mb-4 px-4 py-2 rounded shadow bg-white border border-gray-200">
 				{getStatusIndicator()}
 			</div>
 
@@ -124,7 +124,7 @@ const HomePage = () => {
 			{/* Data Display */}
 			<div className="w-full flex flex-col items-center justify-center py-4">
 				{formattedData ? (
-					<div className="bg-green-100 border border-green-400 text-green-800 px-6 py-4 rounded shadow max-w-3xl w-full">
+					<div className="bg-white border border-green-300 text-green-900 px-6 py-4 rounded shadow max-w-3xl w-full">
 						<strong>Live Sensor Dashboard</strong>
 
 						{/* Graph Selector Buttons */}
@@ -148,7 +148,7 @@ const HomePage = () => {
 
 						{/* Single Sensor Graph */}
 						{selectedGraph !== 'all' && (
-							<div className="bg-white border border-gray-200 rounded p-3 shadow w-full">
+							<div className="bg-gray-100 border border-gray-200 rounded p-3 shadow w-full">
 								<div className="flex items-center mb-2">
 									<span className="font-semibold text-gray-700 mr-2">{variableConfig[selectedGraph].label}</span>
 									<span className="text-xs text-gray-500">({variableConfig[selectedGraph].unit})</span>
@@ -202,7 +202,7 @@ const HomePage = () => {
 
 						{/* All Sensors Graph */}
 						{selectedGraph === 'all' && (
-							<div className="bg-white border border-gray-200 rounded p-3 shadow w-full">
+							<div className="bg-gray-100 border border-gray-200 rounded p-3 shadow w-full">
 								<div className="flex items-center mb-2">
 									<span className="font-semibold text-gray-700 mr-2">All Sensors</span>
 								</div>
