@@ -4,20 +4,20 @@ export const getData = async (req, res) => {
     let sensorData = null;
     let message = "";
 
-    console.log("📡 Received request body:", req.body);
+    // console.log("📡 Received request body:", req.body);
 
     // If a file is uploaded (e.g., via multipart/form-data), parse it
     if (req.file) {
-      console.log("File Uploaded");
+      // console.log("File Uploaded");
       sensorData = JSON.parse(req.file.buffer.toString());
       message = "Sensor data from uploaded file";
     } else if (req.body && Object.keys(req.body).length > 0) {
-      console.log("Object Uploaded");
+      // console.log("Object Uploaded");
       // Check for wrapped data first, then direct data
       sensorData = req.body.data || req.body;
       message = "Sensor data received from ESP32";
       
-      console.log("📊 Processing sensor data:", sensorData);
+      // console.log("📊 Processing sensor data:", sensorData);
     } else {
       return res.status(400).json({ message: "No sensor data provided" });
     }

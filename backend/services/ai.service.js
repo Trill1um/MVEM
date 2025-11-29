@@ -14,7 +14,7 @@ const model = 'openai/gpt-oss-120b';
 
 
 function buildPrompt(sensorData) {
-  return ```
+  return `
   Based on the given data, tell the user if the area is safe.\nThe given values are:
   Temperature: ${sensorData.temperature}°C
   Humidity: ${sensorData.humidity}%
@@ -28,7 +28,7 @@ function buildPrompt(sensorData) {
   Notes: Do not get to technical. Keep it simple and concise.Keep in mind the target audience is general users without technical background.
   Do not re state the input values in your response.
   Also for context: you are speaking through an html document so random symbols like \\* won't work
-  ```;
+  `;
   
 
 }
