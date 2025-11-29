@@ -23,7 +23,12 @@ function buildPrompt(sensorData) {
   
   Provide a brief analysis and safety recommendation in this format:
   Brief Analysis
-  recommendations
+  recommendations (int parts)
+      - residential 
+      - emergency services
+      - industrial
+      - agricultural
+      - general public
 
   Notes: Do not get to technical. Keep it simple and concise.Keep in mind the target audience is general users without technical background.
   Do not re state the input values in your response.
