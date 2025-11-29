@@ -15,27 +15,26 @@ const model = 'openai/gpt-oss-120b';
 
 function buildPrompt(sensorData) {
   return `
-  Based on the given data, tell the user if the area is safe.\nThe given values are:
-  Temperature: ${sensorData.temperature}°C
-  Humidity: ${sensorData.humidity}%
-  Air Quality PPM: ${sensorData.airQuality}
-  Resistance: ${sensorData.resistance} Ohms
-  
-  Provide a brief analysis and safety recommendation in this format:
-  Brief Analysis
-  Recommendations (This part should be formatted like 1 paragraph per recommendation where in the specific recommendation is the title of each paragraph):
-      - residential 
-      - emergency services
-      - industrial
-      - agricultural
-      - general public
+  You are an environmental safety assistant. Analyze the following sensor data and provide a clear, concise safety analysis and recommendations for each audience.
 
-  Notes: Do not get to technical. Keep it simple and concise.Keep in mind the target audience is general users without technical background.
-  Do not re state the input values in your response.
-  Also for context: you are speaking through an html document so random symbols like \\* won't work
-  `;
-  
+  Sensor Data:
+  - Temperature: ${sensorData.temperature}°C
+  - Humidity: ${sensorData.humidity}%
+  - Air Quality PPM: ${sensorData.airQuality}
+  - Resistance: ${sensorData.resistance} Ohms
 
+  Instructions:
+  - Do NOT repeat the input values in your response.
+  - Give a brief analysis of the overall safety.
+  - For each audience (residential, emergency services, industrial, agricultural, general public), give a short, actionable recommendation as a separate paragraph, starting with the audience as the title.
+  - Use simple language for non-technical users.
+  - Output should be plain text, no special symbols or formatting.
+
+  Notes:
+  - If any value is outside a safe range, mention it in the analysis.
+  - If all values are safe, say so clearly.
+  `
+  ;
 }
 
 
