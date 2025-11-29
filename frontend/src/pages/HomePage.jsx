@@ -96,7 +96,7 @@ const HomePage = () => {
 
     setAiLoading(true);
     try {
-      const res = await axios.post("/api/analyze", payload);
+      const res = await axios.post("analyze", payload);
       setAiResult(res.data?.aiResponse || "AI did not return any analysis.");
     } catch (err) {
       setAiResult(
