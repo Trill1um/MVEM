@@ -33,6 +33,7 @@ app.use(cors({
     const allowedOrigins = [
       process.env.FRONTEND_PRODUCTION_URL,
       process.env.FRONTEND_DEVELOPMENT_URL,
+      process.env.VITE_SERVER_PRODUCTION_URL,
     ].filter(Boolean);
     console.log(`Checking origin: ${origin} against allowed: ${allowedOrigins.join(', ')}`);
     if (allowedOrigins.includes(origin)) {
