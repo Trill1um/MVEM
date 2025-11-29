@@ -6,6 +6,7 @@ import http from "http";
 import { Server } from "socket.io";
 
 import readingRoute from "./routes/reading.route.js";
+import aiRoute from "./routes/ai.route.js";
 
 dotenv.config();
 
@@ -81,6 +82,7 @@ io.on('connection', (socket) => {
 app.set("io", io);
 
 app.use("/api/", readingRoute);
+app.use("/api/", aiRoute);
 
 server.listen(PORT, () => {
   console.log("Server is running on port ", PORT);

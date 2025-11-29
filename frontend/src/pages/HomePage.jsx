@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useSocketStore } from "../utils/data.utils.js";
+import axios from "../lib/axios.js";
 
 import { Line } from "react-chartjs-2";
 import {
@@ -61,6 +62,9 @@ const HomePage = () => {
     clearError,
   } = useSocketStore();
 
+  const [aiResult, setAiResult] = useState("Press analyze to get AI insights");
+  const [aiLoading, setAiLoading] = useState(false);
+
   const [selectedGraph, setSelectedGraph] = useState("temperature"); // default to temperature
 
   // In-memory history for line graphs (last 50 points)
@@ -76,6 +80,32 @@ const HomePage = () => {
     airQuality: [],
     rzero: [],
   });
+
+  const handleAiAnalyze = async () => {
+    if (!formattedData) {
+      setAiResult("Waiting for live data before running AI analysis.");
+      return;
+    }
+
+    const payload = {
+      temperature: formattedData.values.temperature?.value,
+      humidity: formattedData.values.humidity?.value,
+      airQuality: formattedData.values.airQuality?.value,
+      resistance: formattedData.values.rzero?.value,
+    };
+
+    setAiLoading(true);
+    try {
+      const res = await axios.post("/api/analyze", payload);
+      setAiResult(res.data?.aiResponse || "AI did not return any analysis.");
+    } catch (err) {
+      setAiResult(
+        "Error: " + (err?.response?.data?.message || err.message || "Unknown error")
+      );
+    } finally {
+      setAiLoading(false);
+    }
+  };
 
   useEffect(() => {
     connect();
@@ -334,6 +364,32 @@ const HomePage = () => {
                 </div>
               </div>
             )}
+
+            {/* AI Analysis Section */}
+            <div className="mt-8 w-full bg-white border border-green-200 rounded-lg shadow p-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-green-800">AI Safety Insight</h3>
+                  <p className="text-sm text-gray-600">
+                    Get a quick safety summary from the latest sensor values.
+                  </p>
+                </div>
+                <button
+                  onClick={handleAiAnalyze}
+                  disabled={aiLoading}
+                  className={`px-4 py-2 rounded font-semibold shadow btn-anim transition-colors border ${
+                    aiLoading
+                      ? "bg-gray-300 text-gray-600 border-gray-300 cursor-not-allowed"
+                      : "bg-green-500 text-white border-green-600 hover:bg-green-600"
+                  }`}
+                >
+                  {aiLoading ? "Analyzing..." : "Analyze with AI"}
+                </button>
+              </div>
+              <div className="mt-4 text-sm bg-green-50 border border-green-200 rounded p-3 text-gray-800 whitespace-pre-wrap">
+                {aiResult}
+              </div>
+            </div>
 
             {/* Metadata */}
             <div className="mt-4 pt-4 border-t border-green-300 text-sm">
