@@ -12,7 +12,6 @@ dotenv.config();
 const groqApiKey = process.env.GROQ_API_KEY;
 const model = 'openai/gpt-oss-120b';
 
-
 function buildPrompt(sensorData) {
   return `
   You are an environmental safety assistant. Analyze the following sensor data and provide a clear, concise safety analysis and recommendations for each audience.
