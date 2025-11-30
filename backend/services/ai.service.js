@@ -19,7 +19,7 @@ function buildPrompt(sensorData) {
   Sensor Data:
   - Temperature: ${sensorData.temperature}°C
   - Humidity: ${sensorData.humidity}%
-  - Air Quality PPM: ${sensorData.airQuality}
+  - Air Quality CO2 PPM: ${sensorData.airQuality}
   - Resistance: ${sensorData.resistance} Ohms
 
   Instructions:
